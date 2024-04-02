@@ -14,47 +14,42 @@ from django.core.paginator import Paginator
 def is_ajax(request):
     return request.META.get("HTTP_X_REQUESTED_WITH") == "XMLHttpRequest"
 
-
+@login_required(login_url="/login")  # redirect when user is not logged in
 def index(request):
-    if request.method == "POST" and not is_ajax(request=request):
-        print(request.POST["postar"])
-        Posts.objects.create(texto=request.POST["postar"], dono=request.user).save()
-        # Remove the duplicate post
-        ids = Posts.objects.filter(
-            texto=request.POST["postar"], dono_id__username=request.user
-        ).values("id")
-        lista_de_ids = []
-        for i in range(len(ids)):
-            lista_de_ids.append(ids[i]["id"])
-        Posts.objects.filter(
-            texto=request.POST["postar"],
-            dono_id__username=request.user,
-            id=lista_de_ids[1],
-        ).delete()
-
-    contents = Posts.objects.all()
-    already_liked = []
-    id = request.user.id
-    for content in contents:
-        if content.likes.filter(id=id).exists():
-            already_liked.append(content.id)
-    data = (
-        Posts.objects.values(
-            "texto", "data", "dono_id__username", "dono__id", "like_count", "id"
+    if request.method == "GET":
+        current_user = request.user
+        seguindo = Followers.objects.filter(conta=current_user.id).values(
+            "seguindo_id",
         )
-        .order_by("-data")
-        .distinct()
-    )
-
-    p = Paginator(data, 10)
-    page = request.GET.get("page")
-    todas = p.get_page(page)
-    nums = " " * todas.paginator.num_pages
-    return render(
-        request,
-        "network/index.html",
-        {"posts": data, "already_liked": already_liked, "todas": todas, "nums": nums},
-    )
+        lista_de_ids = []
+        for i in range(len(seguindo)):
+            lista_de_ids.append(seguindo[i]["seguindo_id"])
+        contents = Posts.objects.all()
+        already_liked = []
+        id = request.user.id
+        for content in contents:
+            if content.likes.filter(id=id).exists():
+                already_liked.append(content.id)
+        data = (
+            Posts.objects.filter(dono__in=lista_de_ids)
+            .order_by("-data")
+            .values("texto", "data", "dono_id__username", "dono", "like_count", "id")
+        )
+        p = Paginator(data, 8)
+        page = request.GET.get("page")
+        todas = p.get_page(page)
+        nums = " " * todas.paginator.num_pages
+        return render(
+            request,
+            "network/timeline.html",
+            {
+                "usuario": current_user,
+                "data": data,
+                "already_liked": already_liked,
+                "todas": todas,
+                "nums": nums,
+            },
+        )
 
 
 def login_view(request):
@@ -179,6 +174,47 @@ def profile(request, pk):
         },
     )
 
+@login_required(login_url="/login")  # redirect when user is not logged in
+def all(request):
+    if request.method == "POST" and not is_ajax(request=request):
+        print(request.POST["postar"])
+        Posts.objects.create(texto=request.POST["postar"], dono=request.user).save()
+        # Remove the duplicate post
+        ids = Posts.objects.filter(
+            texto=request.POST["postar"], dono_id__username=request.user
+        ).values("id")
+        lista_de_ids = []
+        for i in range(len(ids)):
+            lista_de_ids.append(ids[i]["id"])
+        Posts.objects.filter(
+            texto=request.POST["postar"],
+            dono_id__username=request.user,
+            id=lista_de_ids[1],
+        ).delete()
+
+    contents = Posts.objects.all()
+    already_liked = []
+    id = request.user.id
+    for content in contents:
+        if content.likes.filter(id=id).exists():
+            already_liked.append(content.id)
+    data = (
+        Posts.objects.values(
+            "texto", "data", "dono_id__username", "dono__id", "like_count", "id"
+        )
+        .order_by("-data")
+        .distinct()
+    )
+
+    p = Paginator(data, 10)
+    page = request.GET.get("page")
+    todas = p.get_page(page)
+    nums = " " * todas.paginator.num_pages
+    return render(
+        request,
+        "network/index.html",
+        {"posts": data, "already_liked": already_liked, "todas": todas, "nums": nums, "title":"All posts"},
+    )
 
 @login_required(login_url="/login")  # redirect when user is not logged in
 def following(request):
