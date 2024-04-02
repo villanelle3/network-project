@@ -1,0 +1,203 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+{% if user.is_authenticated %}
+{% if usuario == user.id %}
+    <section class="content-item" id="comments">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-8">
+                    <h2 style="padding-top:0px;">Edit Post</h2>
+                    <div class="media">
+                        <div class="media-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                {{ form.as_p }}
+                                <input type="submit" class="btn btn-primary btn-sm pull-right" name="btn-postar" id="btn" value="Edit"></input>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% else %}
+    <img src="https://stories.freepiklabs.com/storage/42257/403-error-forbidden-cuate-6600.png" alt="404">
+    <style>
+    img
+    {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 40%;
+    }
+    </style>
+{% endif %}
+{% endif %}
+
+
+    <style>
+
+    #comments .btn
+    {
+	margin-top:7px;
+    padding: 6px 25px 6px 25px;
+    background-color: #D4AC0D !important;
+    border:0px;
+    }
+    #comments .btn:hover
+    {
+    background-color: #F7DC6F !important;
+    }
+
+    .content-item
+    {
+    padding:30px 0;
+    }
+    .content-item h3
+    {
+	font-weight:500;
+	font-size:30px;
+	color:black;
+	margin:10px 0 15px;
+	padding:0;
+    }
+
+    #comments form
+    {
+        margin-bottom:30px;
+    }
+
+    #comments form fieldset
+    {
+        clear:both;
+    }
+
+    #comments form textarea
+    {
+        height:100px;
+    }
+
+    #comments .media
+    {
+        border-top:1px dashed #DDDDDD;
+        padding:20px 0;
+        margin:0;
+    }
+
+    #comments .media > .pull-left
+    {
+        margin-right:20px;
+    }
+
+    #comments .media h4
+    {
+        margin:0 0 10px;
+    }
+
+    #comments .media h4 span
+    {
+        font-size:12px;
+        float:right;
+    }
+    #comments .media h4 a:hover
+    {
+        text-decoration:none;
+        color:#D4AC0D;
+    }
+    #comments .media h4 a
+    {
+        color:#D4AC0D;
+    }
+
+    #comments .media p
+    {
+        margin-bottom:15px;
+        text-align:justify;
+    }
+
+    #comments .media-detail
+    {
+        margin:0;
+    }
+
+    #comments .media-detail li
+    {
+        color:#AAAAAA;
+        font-size:12px;
+        padding-right: 10px;
+        font-weight:600;
+    }
+
+    #comments .media-detail .btn-secondary:hover
+    {
+        background-color:#E9967A;
+    }
+
+    #comments .media-detail .btn-secondary
+    {
+        text-align: center;
+        background: #CD5C5C;
+        border-radius: 3px;
+        font-size: 15px;
+        cursor: pointer;
+        border: none;
+        outline: none;
+        color: white;
+        text-decoration: none;
+        -webkit-transition: 0.3s ease;
+        transition: 0.3s ease;
+    }
+
+    #comments .media-detail .btn-secondary2:hover
+    {
+        background-color:#93C572;
+    }
+
+    #comments .media-detail .btn-secondary2
+    {
+        text-align: center;
+        background: #556B2F;
+        border-radius: 3px;
+        font-size: 15px;
+        cursor: pointer;
+        border: none;
+        outline: none;
+        color: white;
+        text-decoration: none;
+        -webkit-transition: 0.3s ease;
+        transition: 0.3s ease;
+    }
+
+    #comments .media-detail .btn-secondary .fa
+    {
+        margin-right: 5px;
+    }
+
+    .animate-like
+    {
+        animation-name: likeAnimation;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+        animation-duration: 0.65s;
+    }
+    @keyframes likeAnimation
+    {
+        0%   { transform: scale(30); }
+        100% { transform: scale(1); }
+    }
+
+    #comments .media-detail li:last-child
+    {
+        padding-right:0;
+    }
+
+    #comments .media-detail li i
+    {
+        color:#666666;
+        font-size:15px;
+        margin-right:10px;
+    }
+    </style>
+{% endblock %}
+

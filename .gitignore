@@ -1,0 +1,23 @@
+# Arquivos gerados pelo sistema operacional
+*.DS_Store
+Thumbs.db
+
+# Arquivos de configuração específicos do ambiente
+.env
+
+# Arquivos de log
+*.log
+
+# Arquivos de backup
+*.bak
+*.swp
+
+# Banco de dados SQLite
+db.sqlite3
+
+# Arquivos de mídia (uploads de usuário, por exemplo)
+media/
+
+# Ambiente virtual
+venv/
+env/

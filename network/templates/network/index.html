@@ -1,0 +1,284 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <section class="content-item" id="comments">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-8">
+
+                    {% if user.is_authenticated %}
+                    <form method="POST">
+                        {% csrf_token %}
+                        <h3 class="pull-left">New Post</h3>
+                        <input type="submit" class="btn btn-primary btn-sm pull-right" name="btn-postar" id="btn" onclick="disable_on_click()" value="Post"></input>
+                        <fieldset>
+                            <div class="row">
+                                <div class="form-group col-xs-12 col-sm-9 col-lg-10">
+                                    <textarea class="form-control" id="message" placeholder="What's happening?" required name="postar"></textarea>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                    {% endif %}
+
+                    <h2 style="padding-top:0px;">All posts</h2>
+
+                    {% for post in todas %}
+                    <!-- COMMENT 1 - START -->
+                        <div class="media">
+                            <div class="media-body">
+                                <h4><a href="{% url 'profile' post.dono__id %}">{{post.dono_id__username}}</a></h4>
+                                <p class="texto">{{post.texto}}</p>
+                                <ul class="list-unstyled list-inline media-detail pull-left">
+                                    <li><i class="fa fa-calendar"></i>{{post.data}}</li>
+                                    <li><i class="fa fa-heart"></i><span id="like_count" class="{{post.id}}" value="{{post.like_count}}">{{post.like_count}}</span></li> <!-- numero de likes. ver https://blog.stackfindover.com/css-like-buttons/ -->
+                                </ul>
+                                {% if user.is_authenticated %}
+                                <ul class="list-unstyled list-inline media-detail pull-right">
+                                    {% if post.dono_id__username == user.username %}
+                                        <button class="btn-secondary2 edit-review" id="edit"><a href="{% url 'edit' post.id %}" style="text-decoration:none; color:white;">Edit</a></button>
+                                    {% endif %}
+                                    {% if post.id in already_liked %}
+                                        <a name="{{post.id}}" class="btn-secondary like-review" id="co" style="background-color:#D4AC0D;">Liked ♡</a>
+                                    {% else %}
+                                        <a name="{{post.id}}" class="btn-secondary like-review" id="co">Like ♡ </a>
+                                    {% endif %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- COMMENT 1 - END -->
+                    {% endfor %}
+
+                </div>
+            </div>
+            <br><br>
+        </div>
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+          {% if todas.has_previous %}
+              <li class="page-item"><a class="page-link" href="?page=1" style="background-color:#FEF9E7; color:black; border-color:#D4AC0D;">&laquo First</a></li>
+              <li class="page-item"><a class="page-link" href="?page={{ todas.previous_page_number }}" style="background-color:#FEF9E7; color:black; border-color:#D4AC0D;">Previous</a></li>
+          {% endif %}
+          {% for i in nums %}
+              <li class="page-item"><a class="page-link" href="?page={{ forloop.counter }}" style="background-color:#FEF9E7; color:black; border-color:#D4AC0D;">{{ forloop.counter }}</a></li>
+          {% endfor %}
+          {% if todas.has_next %}
+              <li class="page-item"><a class="page-link" href="?page={{ todas.next_page_number }}" style="background-color:#FEF9E7; color:black; border-color:#D4AC0D;">Next</a></li>
+              <li class="page-item"><a class="page-link" href="?page={{ todas.paginator.num_pages }}" style="background-color:#FEF9E7; color:black; border-color:#D4AC0D;">Last &raquo</a></li>
+          {% endif %}
+           </ul>
+          </nav>
+          <br/>
+    </section>
+
+    <script>
+        function disable_on_click()
+        {
+            var x = document.getElementById('btn');
+            var i;
+            for (i = 0; i < x.length; i++)
+            {
+                x[i].setAttribute("disabled", "disabled")
+            }
+        }
+
+        $('.like-review').click(function(e) {
+            e.preventDefault();
+            $.ajax({
+            type: 'POST',
+            url: '{% url "like" %}',
+            data: {
+                postid: $(this).attr('name'),
+                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+                action: 'post'
+            },
+            success: function (json) {
+                document.getElementsByClassName(".like-review").innerHTML = json['result']
+                selector = document.getElementsByName(json['postid']);
+                if (json['jadeulike'] == true)
+                {
+                    $(selector).css("background-color","#D4AC0D");
+                    $(selector).html('Liked ♡ ');
+                    $(`.${json['postid']}`).html(json['numlikes']);
+
+                }
+                else if (json['jadeulike'] == false)
+                {
+                    $(selector).css("background-color","#CD5C5C");
+                    $(selector).html('Like ♡ ');
+                    $(`.${json['postid']}`).html(json['numlikes']);
+                }
+            },
+            error: function (xhr, errmsg, err) {
+            }
+            });
+        })
+
+    </script>
+
+    <style>
+
+    #comments .btn
+    {
+        margin-top:7px;
+        padding: 6px 25px 6px 25px;
+        background-color: #D4AC0D !important;
+        border:0px;
+    }
+    #comments .btn:hover
+    {
+        background-color: #F7DC6F !important;
+    }
+
+    .content-item
+    {
+        padding:30px 0;
+    }
+    .content-item h3
+    {
+        font-weight:500;
+        font-size:30px;
+        color:black;
+        margin:10px 0 15px;
+        padding:0;
+    }
+
+    #comments form
+    {
+        margin-bottom:30px;
+    }
+
+    #comments form fieldset
+    {
+        clear:both;
+    }
+
+    #comments form textarea
+    {
+        height:100px;
+    }
+
+    #comments .media
+    {
+        border-top:1px dashed #DDDDDD;
+        padding:20px 0;
+        margin:0;
+    }
+
+    #comments .media > .pull-left
+    {
+        margin-right:20px;
+    }
+
+    #comments .media h4
+    {
+        margin:0 0 10px;
+    }
+
+    #comments .media h4 a:hover
+    {
+        text-decoration:none;
+        color:#D4AC0D;
+    }
+    #comments .media h4 a
+    {
+        color:#D4AC0D;
+    }
+
+    #comments .media h4 span
+    {
+        font-size:12px;
+        float:right;
+    }
+
+    #comments .media p
+    {
+        margin-bottom:15px;
+        text-align:justify;
+    }
+
+    #comments .media-detail
+    {
+        margin:0;
+    }
+
+    #comments .media-detail li
+    {
+        color:#AAAAAA;
+        font-size:12px;
+        padding-right: 10px;
+        font-weight:600;
+    }
+
+    #comments .media-detail .btn-secondary:hover
+    {
+        background-color:#E9967A;
+    }
+
+    #comments .media-detail .btn-secondary
+    {
+        text-align: center;
+        background: #CD5C5C;
+        border-radius: 3px;
+        font-size: 15px;
+        cursor: pointer;
+        border: none;
+        outline: none;
+        color: white;
+        text-decoration: none;
+        -webkit-transition: 0.3s ease;
+        transition: 0.3s ease;
+    }
+
+    #comments .media-detail .btn-secondary2:hover
+    {
+        background-color:#93C572;
+    }
+
+    #comments .media-detail .btn-secondary2
+    {
+        text-align: center;
+        background: #556B2F;
+        border-radius: 3px;
+        font-size: 15px;
+        cursor: pointer;
+        border: none;
+        outline: none;
+        color: white;
+        text-decoration: none;
+        -webkit-transition: 0.3s ease;
+        transition: 0.3s ease;
+    }
+
+    #comments .media-detail .btn-secondary .fa
+    {
+        margin-right: 5px;
+    }
+
+    .animate-like
+    {
+	animation-name: likeAnimation;
+	animation-iteration-count: 1;
+	animation-fill-mode: forwards;
+	animation-duration: 0.65s;
+    }
+    @keyframes likeAnimation
+    {
+    0%   { transform: scale(30); }
+    100% { transform: scale(1); }
+    }
+
+    #comments .media-detail li:last-child
+    {
+        padding-right:0;
+    }
+
+    #comments .media-detail li i
+    {
+        color:#666666;
+        font-size:15px;
+        margin-right:10px;
+    }
+    </style>
+{% endblock %}
